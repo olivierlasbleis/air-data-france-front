@@ -7,4 +7,14 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'air-data-france-front';
+
+  mainChart: any;
+subChart: any;
+
+
+charts = [{name: 'map', path: '../assets/charts/franceCovid.json'}];
+
+public handleMainChart(chartData: any) {
+  this.mainChart = chartData;
+}
 }

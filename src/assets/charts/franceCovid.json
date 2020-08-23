@@ -1,0 +1,115 @@
+
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "width": 1000,
+  "height": 700,
+  "autosize": "none",
+
+  "signals": [
+    {
+      "name": "scale", "value": 2500
+    },
+    {
+      "name": "translateX", "value": 300
+
+    },
+    {
+      "name": "translateY", "value": 2650
+    },
+    {
+      "name": "shape", "value": "line"
+    }],
+
+
+  "data": [
+    {"name":"unemp", "url": "http://localhost:8080/map/valuesPM10"}
+    ,
+    {
+      "name": "france",
+      "url": "../assets/charts/communes-france-topojson.json",
+      "format": {"type": "topojson", "feature": "communes-france-topojson"},
+      "transform": [
+        { "type": "lookup", "from": "unemp", "key": "code", "fields": ["properties.code"], "values": ["rate"] },
+        { "type": "filter", "expr": "datum.rate != null" }
+      ]
+    },
+    {
+      "name": "airports",
+      "url": "http://localhost:8080/map/stationspollution",
+      
+      "transform": [
+      
+        {
+          "type": "geopoint",
+          "projection": "projection",
+          "fields": ["longitude", "latitude"]
+        }
+      ]
+    }
+  ],
+
+  "projections": [
+    {
+      "name": "projection",
+      "type": "mercator",
+      "scale": {"signal": "scale"},
+      "translate": [{"signal": "translateX"}, {"signal": "translateY"}]
+    }
+  ],
+
+  "scales": [
+    {
+      "name": "color",
+      "type": "quantize",
+      "domain": [0, 100],
+      "range": {"scheme": "greenblue", "count": 20}
+    }
+  ],
+
+  "legends": [
+    {
+      "fill": "color",
+      "orient": "bottom-right",
+      "title": "Nbre de positifs par département",
+      "format": "1"
+    }
+  ],
+
+  "marks": [
+    {
+      "type": "shape",
+      "from": {"data": "france"},
+      "encode": {
+        "enter": { "tooltip": {"signal": "datum.properties.nom + ' : ' +  format( datum.rate, '1') + ' professionels de positifs / 100 000 hab.'"}},
+        "update": { "fill": {"scale": "color", "field": "rate"} },
+        "hover": { "fill": {"value": "red"} }
+
+
+      },
+      "transform": [
+        { "type": "geoshape", "projection": "projection" }
+      ]
+    },
+    {
+      "type": "symbol",
+      "from": {"data": "airports"},
+      "encode": {
+        "enter": {
+          "size": {"value": 100},
+          "fill": {"value": "steelblue"},
+          "fillOpacity": {"value": 0.8},
+          "stroke": {"value": "white"},
+          "strokeWidth": {"value": 1.5}
+        },
+        "update": {
+          "x": {"field": "x"},
+          "y": {"field": "y"}
+        }
+      }
+    }
+  ]
+}
+
+
+
+
